@@ -7,8 +7,20 @@
 
   echo '<br>';
   echo '<br>';
+  // var_dump($_SESSION);
+  // var_dump($_COOKIE);
 
-  // ログインボタンが押された時
+  // クッキーに情報が存在していたら自動ログイン
+  // $_POSTにCOOKIEに保存されている値を代入
+  if (isset($_COOKIE['email'])) {
+    $_POST['email'] = $_COOKIE['email'];
+    $_POST['password'] = $_COOKIE['password'];
+
+    // COOKIEが保存されていたらログインした時間を更新する = 保存期間を更新する
+    $_POST['save'] = 'on';
+  }
+
+  // ログインボタンが押された時、または自動ログインしている時
   if (!empty($_POST)) {
     // POST送信されたメールアドレスとパスワードと一致するものをmembersテーブルから取得する
     // WHEREで複数条件をつけるときはANDまたはORを使用する
@@ -41,10 +53,10 @@
         // setcookie(保存したい名前, 保存したい値, 保存したい期間(秒数表示))
         setcookie('email', $_POST['email'], time()+60*60*24*14);
         setcookie('password', $_POST['password'], time()+60*60*24*14);
-
-        // 4.ログイン後の画面に移動
-        header('Location: index.php');
       }
+
+      // 4.ログイン後の画面に移動
+      header('Location: index.php');
     }
   }
 

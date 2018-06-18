@@ -1,4 +1,23 @@
 <?php
+  session_start();
+  require('db_connect.php');
+
+  // ログインチェック
+  if (!isset($_SESSION['login_id'])) {
+    // ログインしていない時
+    header('Location: login.php');
+  } else {
+    // ログインしている時
+    $sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+    $data = array($_SESSION['login_id']);
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+    // ログインしているユーザーのデータが入っている
+    $login_member = $stmt->fetch(PDO::FETCH_ASSOC);
+  }
+
+
+
 
 ?>
 
@@ -35,7 +54,7 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.html">ログアウト</a></li>
+                <li><a href="logout.php">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -46,7 +65,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ●●さん！</legend>
+        <legend>ようこそ<?php echo $login_member['nickname']; ?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
