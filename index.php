@@ -16,8 +16,45 @@
     $login_member = $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
+  // つぶやくボタンが押された時
+  if (!empty($_POST)) {
 
+    // 入力チェック
+    if ($_POST['tweet'] == '') {
+      $error['tweet'] = 'blank';
+    }
 
+    if (!isset($error)) {
+      // sql文作成 INSERT INTO
+      // tweet = つぶやいた内容
+      // member_id = ログインしているユーザーのid
+      // reply_tweet_id = -1
+      // created = datetime型 = NOW()使用
+      // modified = phpMyAdmin側 = 書く必要ない
+
+      $sql = 'INSERT INTO `tweets` SET `tweet`=?, `member_id`=?, `reply_tweet_id`=-1, `created`=NOW()';
+      $data = array($_POST['tweet'], $_SESSION['login_id']);
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($data);
+    }
+  }
+
+  // 一覧用のつぶやき全件を最新順に取得
+  $tweet_sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC';
+  $tweet_stmt = $dbh->prepare($tweet_sql);
+  $tweet_stmt->execute();
+
+  // 空の配列を作ることでデータがない時のエラーを防ぐ
+  $tweets = array();
+
+  // 全件分fetchしている
+  while (true) {
+    $tweet = $tweet_stmt->fetch(PDO::FETCH_ASSOC);
+    if ($tweet == false) {
+      break;
+    }
+    $tweets[] = $tweet;
+  }
 
 ?>
 
@@ -83,66 +120,25 @@
           </ul>
         </form>
       </div>
-
+      
       <div class="col-md-8 content-margin-top">
+        <?php foreach ($tweets as $tweet) { ?>
         <div class="msg">
           <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
           <p>
-            つぶやき４<span class="name"> (Seed kun) </span>
+            <?php echo $tweet['tweet']; ?><span class="name"> (Seed Kun) </span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
-            <a href="view.html">
-              2016-01-28 18:04
+            <a href="view.php?tweet_id=<?php echo $tweet['tweet_id']; ?>">
+              <?php echo $tweet['created']; ?>
             </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
+            [<a href="edit.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
+            [<a href="delete.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
           </p>
         </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき３<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:03
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき２<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:02
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
-        <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            つぶやき１<span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.html">
-              2016-01-28 18:01
-            </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
+        <?php } ?>
       </div>
-
     </div>
   </div>
 

@@ -1,17 +1,34 @@
 <?php
-  require ('db_connect.php');
+	session_start();
+	require ('db_connect.php');
 
-  // GET送信されてきた時
-  if (!empty($_GET)) {
-    $sql = 'SELECT * FROM `tweets` WHERE `tweet_id`=?';
-    $data = array($_GET['tweet_id']);
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute($data);
-    $record = $stmt->fetch(PDO::FETCH_ASSOC);
-  }
+	// GET送信されてきた時
+	if (!empty($_GET)) {
+		$sql = 'SELECT * FROM `tweets` WHERE `tweet_id`=?';
+		$data = array($_GET['tweet_id']);
+		$stmt = $dbh->prepare($sql);
+     	$stmt->execute($data);
+     	$record = $stmt->fetch(PDO::FETCH_ASSOC);
+	}
 
+	// 編集ボタンが押された時
+	if (!empty($_POST)) {
+
+		// 入力チェック
+	    if ($_POST['tweet'] == '') {
+	      $error['tweet'] = 'blank';
+	    }
+
+    	if (!isset($error)) {
+			$sql = 'UPDATE `tweets` SET `tweet`=? WHERE `tweet_id`=?';
+			$data = array($_POST['tweet'], $_GET['tweet_id']);
+			$stmt = $dbh->prepare($sql);
+	     	$stmt->execute($data);
+
+	     	header('Location: index.php');
+	    }
+	}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -46,7 +63,7 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.html">ログアウト</a></li>
+                <li><a href="logout.php">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -56,19 +73,24 @@
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4 content-margin-top">
+      <div class="col-md-6 col-md-offset-3 content-margin-top">
+        <h4>つぶやき編集</h4>
         <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="100" height="100">
-          <p>投稿者 : <span class="name"> Seed kun </span></p>
-          <p>
-            つぶやき : <br>
-            <?php echo $record['tweet']; ?>
-          </p>
-          <p class="day">
-            <?php echo $record['created']; ?>
-            [<a href="edit.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #00994C;">編集</a>]
-            [<a href="delete.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #F33;">削除</a>]
-          </p>
+          <form method="post" action="" class="form-horizontal" role="form">
+              <!-- つぶやき -->
+              <div class="form-group">
+                <label class="col-sm-4 control-label">つぶやき</label>
+                <div class="col-sm-8">
+                  <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $record['tweet']; ?></textarea>
+                  <?php if (isset($error)): ?>
+                  	<p class="error">* 入力されていません</p>
+                  <?php endif ?>
+                </div>
+              </div>
+            <ul class="paging">
+              <input type="submit" class="btn btn-info" value="変更保存">
+            </ul>
+          </form>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
