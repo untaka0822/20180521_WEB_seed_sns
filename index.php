@@ -39,8 +39,49 @@
     }
   }
 
+  // ページング処理
+  // ツイートを見やすくするため、5ツイート1ページにする機能を追加
+  // 空の変数を用意
+  // $page = '';
+
+  // パラメータが存在していたら$pageにページ番号を代入する
+  if (isset($_GET['page'])) {
+    $page = $_GET['page'];
+  } else {
+    // 存在していない時はデフォルト値を1にする
+    $page = 1;
+  }
+
+  // もし1以下のイレギュラーな数字が入ってきた時、ページ番号を強制的に1にする
+  // max() = カンマ区切りで並んでいる数字の中から最大の数字を取得
+  $page = max($page, 1);
+
+  // 1ページ分の表示件数を設定
+  $max_page_tweet = 5;
+
+  // ツイートの件数から最大のページ数を計算する
+  // ツイートの件数を取得
+  $page_sql = 'SELECT COUNT(*) AS `count` FROM `tweets`';
+  $page_stmt = $dbh->prepare($page_sql);
+  $page_stmt->execute();
+  $max_tweets = $page_stmt->fetch(PDO::FETCH_ASSOC);
+
+  // 小数点の切り上げ
+  // ページの最大数
+  $all_pages_number = ceil($max_tweets['count'] / $max_page_tweet);
+
+  // パラメータの数字に最大ページを超えた数字を入れられた場合に強制的に最後のページとする
+  // min() = カンマ区切りで並んでいる数字の中から最小の数字を取得
+  $page = min($page, $all_pages_number);
+
+  // 表示するデータの取得開始場所
+  $start_page = ($page - 1) * $max_page_tweet;
+
   // 一覧用のつぶやき全件を最新順に取得
-  $tweet_sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC';
+  $tweet_sql = "SELECT `tweets`.*, `members`.`nickname`, `members`.`picture_path`, `members`.`created` AS `member_created` FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` ORDER BY `tweets`.`created` DESC LIMIT ".$start_page.",".$max_page_tweet;
+  // SELECT 取得したいカラム FROM 取得したいテーブル LEFT JOIN 繋げたいテーブル ON 取得したいテーブル.繋げるキー=繋げたいテーブル.繋げるキー ORDER BY 順番 昇順か降順か LIMIT 開始位置,取得する個数
+  // LIMIT == 取得するデータの制限をする
+  // LIMIT 開始位置, 取得する個数
   $tweet_stmt = $dbh->prepare($tweet_sql);
   $tweet_stmt->execute();
 
@@ -56,6 +97,10 @@
     $tweets[] = $tweet;
   }
 
+  echo '<br>';
+  echo '<pre>';
+  var_dump($tweets);
+  echo '</pre>';
 ?>
 
 <!DOCTYPE html>
@@ -114,9 +159,9 @@
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <li><a href="index.php?page=<?php echo $page - 1 ?>" class="btn btn-default">前</a></li>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">次</a></li>
+                <li><a href="index.php?page=<?php echo $page + 1 ?>" class="btn btn-default">次</a></li>
           </ul>
         </form>
       </div>
@@ -126,7 +171,7 @@
         <div class="msg">
           <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
           <p>
-            <?php echo $tweet['tweet']; ?><span class="name"> (Seed Kun) </span>
+            <?php echo $tweet['tweet']; ?><span class="name"><a href="profile.php?tweet_id=<?php echo $tweet['tweet_id']; ?>">(Seed Kun) </a></span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
