@@ -1,9 +1,10 @@
 <?php
+  session_start();
   require ('db_connect.php');
 
   // GET送信されてきた時
   if (!empty($_GET)) {
-    $sql = 'SELECT * FROM `tweets` WHERE `tweet_id`=?';
+    $sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
     $data = array($_GET['tweet_id']);
     $stmt = $dbh->prepare($sql);
     $stmt->execute($data);
@@ -59,15 +60,17 @@
       <div class="col-md-4 col-md-offset-4 content-margin-top">
         <div class="msg">
           <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="100" height="100">
-          <p>投稿者 : <span class="name"> Seed kun </span></p>
+          <p>投稿者 : <span class="name"> <?php echo $record['nickname']; ?> </span></p>
           <p>
             つぶやき : <br>
             <?php echo $record['tweet']; ?>
           </p>
           <p class="day">
             <?php echo $record['created']; ?>
-            [<a href="edit.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #00994C;">編集</a>]
-            [<a href="delete.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php if ($record['member_id'] == $_SESSION['login_id']): ?>
+              [<a href="edit.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #00994C;">編集</a>]
+              [<a href="delete.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php endif ?>
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
