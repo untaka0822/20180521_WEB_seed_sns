@@ -186,7 +186,7 @@
         <div class="msg">
           <img src="picture_path/<?php echo $tweet['picture_path']; ?>" width="48" height="48">
           <p>
-            <?php echo $tweet['tweet']; ?><span class="name"><a href="profile.php?tweet_id=<?php echo $tweet['tweet_id']; ?>">(<?php echo $tweet['nickname']; ?>) </a></span>
+            <?php echo $tweet['tweet']; ?><span class="name"><a href="profile.php?member_id=<?php echo $tweet['member_id']; ?>">(<?php echo $tweet['nickname']; ?>) </a></span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">

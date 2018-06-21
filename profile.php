@@ -11,26 +11,20 @@
 	if (!empty($_GET)) {
 		// テーブル結合 LEFT JOIN
 		// 複数のテーブルがあり、それを結合する際、優先テーブルを1つ決めて、そこにある情報を全て優先的に取得する
-		$sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
+		$sql = 'SELECT * FROM `members` LEFT JOIN `tweets` ON `members`.`member_id`=`tweets`.`member_id` WHERE `members`.`member_id`=?';
 		// LEFT JOIN `繋げたいテーブル名` ON `繋げる優先テーブル`.`繋げるカラム`=`繋げたいテーブル`.`繋げたいカラム`
-		$data = array($_GET['tweet_id']);
+		$data = array($_GET['member_id']);
 		$stmt = $dbh->prepare($sql);
-    	$stmt->execute($data);
+    $stmt->execute($data);
 
-    	$tweets = array();
-    	while (true) {
-    		$tweet = $stmt->fetch(PDO::FETCH_ASSOC);
-    		if ($tweet == false) {
-    			break;
-    		}
-    		$tweets[] = $tweet;
-    	}
-
-    	echo '<br>';
-    	echo '<br>';
-    	echo '<pre>';
-    	var_dump($tweets);
-    	echo '</pre>';
+  	$tweets = array();
+  	while (true) {
+  		$tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+  		if ($tweet == false) {
+  			break;
+  		}
+  		$tweets[] = $tweet;
+  	}
 	}
 ?>
 <!DOCTYPE html>
@@ -61,7 +55,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -77,24 +71,26 @@
   <div class="container">
     <div class="row">
       <div class="col-md-3 content-margin-top">
-        <img src="http://placehold.it/200x200">
-        <h3><?php echo $profile['nickname']; ?></h3>
-        <a href="profile.php"><button class="btn btn-block btn-default">フォロー</button></a>
-        <a href="profile.php"><button class="btn btn-block btn-default">フォロー解除</button></a>
+        <img src="picture_path/<?php echo $tweets[0]['picture_path']; ?>" width="260" height="200">
+        <h3><?php echo $tweets[0]['nickname']; ?></h3>
+        <!-- <a href="profile.php"><button class="btn btn-block btn-default">フォロー</button></a>
+        <a href="profile.php"><button class="btn btn-block btn-default">フォロー解除</button></a> -->
         <br>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
       <div class="col-md-9 content-margin-top">
         <div class="msg_header">
-        <a href="follow.php">Followers<span class="badge badge-pill badge-default"></span></a>
-        <a href="following.php">Followings<span class="badge badge-pill badge-default"></span></a>
+        <!-- <a href="follow.php">Followers<span class="badge badge-pill badge-default"></span></a>
+        <a href="following.php">Followings<span class="badge badge-pill badge-default"></span></a> -->
         </div>
-        <div class="msg">
-          <img src="http://placehold.it/50x50">
-          <p>つぶやき : <br></p>
-          <p class="day">
-          </p>
-        </div>
+        <?php foreach ($tweets as $tweet): ?>
+          <div class="msg">
+            <p>つぶやき :<br> <?php echo $tweet['tweet']; ?></p>
+            <p class="day">
+              <?php echo $tweet['created']; ?>
+            </p>
+          </div>
+        <?php endforeach ?>
       </div>
     </div>
   </div>
