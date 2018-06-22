@@ -160,6 +160,9 @@
               <label class="col-sm-4 control-label">つぶやき</label>
               <div class="col-sm-8">
                 <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
+                <?php if (isset($error)): ?>
+                  <p class="error">* 何も入力されていません。</p>
+                <?php endif ?>
               </div>
             </div>
           <ul class="paging">
@@ -187,7 +190,7 @@
           <img src="picture_path/<?php echo $tweet['picture_path']; ?>" width="48" height="48">
           <p>
             <?php echo $tweet['tweet']; ?><span class="name"><a href="profile.php?member_id=<?php echo $tweet['member_id']; ?>">(<?php echo $tweet['nickname']; ?>) </a></span>
-            [<a href="#">Re</a>]
+            [<a href="reply.php?tweet_id=<?php echo $tweet['tweet_id']; ?>">Re</a>]
           </p>
           <p class="day">
             <a href="view.php?tweet_id=<?php echo $tweet['tweet_id']; ?>">
@@ -197,6 +200,7 @@
               [<a href="edit.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
               [<a href="delete.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
             <?php endif ?>
+            <!-- [<a href="#" style="color: blue;"><i class="fa fa-thumbs-o-up">いいね</i></a>] -->
           </p>
         </div>
         <?php } ?>

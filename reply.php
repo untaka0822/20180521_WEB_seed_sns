@@ -1,33 +1,42 @@
 <?php
 	session_start();
-	require ('db_connect.php');
+	require('db_connect.php');
 
-	// GET送信されてきた時
-	if (!empty($_GET)) {
-		$sql = 'SELECT * FROM `tweets` WHERE `tweet_id`=?';
-		$data = array($_GET['tweet_id']);
-		$stmt = $dbh->prepare($sql);
-     	$stmt->execute($data);
-     	$record = $stmt->fetch(PDO::FETCH_ASSOC);
+	// ログインチェック
+	if (isset($_SESSION['login_id']) && $_SESSION['time'] + 3600 > time()) {
+	    // $_SESSION['time']の時間を更新
+	    $_SESSION['time'] = time();
+	} else {
+		// ログインしていない時
+	    header('Location: login.php');
 	}
 
-	// 編集ボタンが押された時
+	// 返信ツイートの作成
 	if (!empty($_POST)) {
-
-		// 入力チェック
-	    if ($_POST['tweet'] == '') {
-	      $error['tweet'] = 'blank';
-	    }
-
-    	if (!isset($error)) {
-			$sql = 'UPDATE `tweets` SET `tweet`=? WHERE `tweet_id`=?';
-			$data = array($_POST['tweet'], $_GET['tweet_id']);
+		if ($_POST['tweet'] == '') {
+			$error['tweet'] = 'blank';
+		}
+		if (!isset($error)) {
+			$sql = 'INSERT INTO `tweets` SET `tweet`=?, `member_id`=?, `reply_tweet_id`=?, `created`=NOW()';
+			// $_POST['tweet'] = 返信内容、 $_SESSION['login_id'] = 返信する人、 $_GET['tweet_id'] = 返信先のID
+			$data = array($_POST['tweet'], $_SESSION['login_id'], $_GET['tweet_id']);
 			$stmt = $dbh->prepare($sql);
-	    $stmt->execute($data);
+		    $stmt->execute($data);
 
-	    header('Location: index.php');
-	  }
+		    header('Location: index.php');
+		}
 	}
+
+	// 返信する投稿の内容を取得するSQL
+	$sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
+	$data = array($_GET['tweet_id']);
+	$stmt = $dbh->prepare($sql);
+	$stmt->execute($data);
+	$tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	// 返信先のツイートとツイートのユーザーを代入
+	$reply_msg = "@".$tweet['tweet']."(".$tweet['nickname'].")";
+
 ?>
 
 <!DOCTYPE html>
@@ -74,21 +83,21 @@
   <div class="container">
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
-        <h4>つぶやき編集</h4>
+        <h4><?php echo $tweet['tweet']; ?>へ返信</h4>
         <div class="msg">
           <form method="post" action="" class="form-horizontal" role="form">
               <!-- つぶやき -->
               <div class="form-group">
-                <label class="col-sm-4 control-label">つぶやき</label>
+                <label class="col-sm-4 control-label">返信内容</label>
                 <div class="col-sm-8">
-                  <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $record['tweet']; ?></textarea>
+                  <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $reply_msg.' : '; ?></textarea>
                   <?php if (isset($error)): ?>
-                  	<p class="error">* 入力されていません</p>
+                  	<p class="error">* 入力されていません。</p>
                   <?php endif ?>
                 </div>
               </div>
             <ul class="paging">
-              <input type="submit" class="btn btn-info" value="変更保存">
+              <input type="submit" class="btn btn-warning" value="返信する">
             </ul>
           </form>
         </div>
