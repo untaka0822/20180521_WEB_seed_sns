@@ -18,14 +18,46 @@
     $stmt->execute($data);
 
   	$tweets = array();
+    $reply_tweets = array();
+
   	while (true) {
-  		$tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+      $tweet = $stmt->fetch(PDO::FETCH_ASSOC);
   		if ($tweet == false) {
   			break;
   		}
   		$tweets[] = $tweet;
   	}
-	}
+
+    for($i=0; $i < count($tweets); $i++) {
+      $reply_sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
+      $reply_data = array($tweets[$i]['reply_tweet_id']);
+      $reply_stmt = $dbh->prepare($reply_sql);
+      $reply_stmt->execute($reply_data);
+
+      $reply_tweets = array();
+      while (true) {
+        $reply_tweet = $reply_stmt->fetch(PDO::FETCH_ASSOC);
+        if ($reply_tweet == false) {
+          break;
+        }
+        $reply_tweets[] = $reply_tweet;
+      }
+    }
+    for($i=0; $i < count($tweets); $i++) {
+      for ($n=0; $n < count($reply_tweets); $n++) {
+        if ($tweets[$i]['reply_tweet_id'] == $reply_tweets[$n]['tweet_id']) {
+          $tweets[$i]['reply_user_id'] = $reply_tweets[$n]['member_id'];
+          $tweets[$i]['reply_user'] = $reply_tweets[$n]['nickname'];
+          $tweets[$i]['reply_tweet'] = $reply_tweets[$n]['tweet'];
+        }
+      }
+    }
+  }
+
+  // echo '<br>';
+  // echo '<pre>';
+  // var_dump($tweets);
+  // echo '</pre>';
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -71,26 +103,33 @@
   <div class="container">
     <div class="row">
       <div class="col-md-3 content-margin-top">
-        <img src="picture_path/<?php echo $tweets[0]['picture_path']; ?>" width="260" height="200">
+        <img src="picture_path/<?php echo $tweets[0]['picture_path']; ?>" width="200" height="200">
         <h3><?php echo $tweets[0]['nickname']; ?></h3>
+        <h4><?php echo $tweets[0]['email']; ?></h4>
         <!-- <a href="profile.php"><button class="btn btn-block btn-default">フォロー</button></a>
         <a href="profile.php"><button class="btn btn-block btn-default">フォロー解除</button></a> -->
         <br>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
       <div class="col-md-9 content-margin-top">
-        <div class="msg_header">
-        <!-- <a href="follow.php">Followers<span class="badge badge-pill badge-default"></span></a>
-        <a href="following.php">Followings<span class="badge badge-pill badge-default"></span></a> -->
-        </div>
-        <?php foreach ($tweets as $tweet): ?>
-          <div class="msg">
-            <p>つぶやき :<br> <?php echo $tweet['tweet']; ?></p>
-            <p class="day">
-              <?php echo $tweet['created']; ?>
-            </p>
+          <div class="msg_header">
+            このユーザーのツイート一覧
+          <!-- <a href="follow.php">Followers<span class="badge badge-pill badge-default"></span></a>
+          <a href="following.php">Followings<span class="badge badge-pill badge-default"></span></a> -->
           </div>
-        <?php endforeach ?>
+          <?php foreach ($tweets as $tweet): ?>
+            <div class="msg">
+              <p>つぶやき :<br> <?php echo $tweet['tweet']; ?></p>
+              <p class="day">
+                <?php echo $tweet['created']; ?>
+              </p>
+              <?php if ($tweet['reply_tweet_id'] != -1): ?>
+                <p>返信先 : <a href="view.php?tweet_id=<?php echo $tweet['reply_tweet_id']; ?>"><?php echo $tweet['reply_tweet']; ?></a></p>
+                <p>返信相手 : <a href="profile.php?member_id=<?php echo $tweet['reply_user_id']; ?>"><?php echo $tweet['reply_user']; ?></a></p>
+              <?php endif ?>
+            </div>
+          <?php endforeach ?>
+        </div>
       </div>
     </div>
   </div>
