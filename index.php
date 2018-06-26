@@ -52,7 +52,7 @@
 
   // パラメータが存在していたら$pageにページ番号を代入する
   if (isset($_GET['page'])) {
-    $page = $_GET['page'];
+    $page = ceil($_GET['page']);
   } else {
     // 存在していない時はデフォルト値を1にする
     $page = 1;
@@ -67,7 +67,7 @@
 
   // ツイートの件数から最大のページ数を計算する
   // ツイートの件数を取得
-  $page_sql = 'SELECT COUNT(*) AS `count` FROM `tweets`';
+  $page_sql = 'SELECT COUNT(*) AS `count` FROM `tweets` WHERE `delete_flag`=0';
   $page_stmt = $dbh->prepare($page_sql);
   $page_stmt->execute();
   $max_tweets = $page_stmt->fetch(PDO::FETCH_ASSOC);
@@ -107,12 +107,16 @@
     // ③一行分のデータに新しいキーを用意して、like数を代入
 
 
-    // ④ログインしている人がLikeしているかどうかの情報を取得
-    
+    // ④ログインしている人が各ツイートにLikeしているかどうかの情報を取得
+    $login_like_sql ='SELECT COUNT(*) AS `like_count` FROM `tweets` WHERE `tweet_id`=? AND `member_id`=?';
+    $login_like_data = array($tweet['tweet_id'], $_SESSION['login_id']);
     // ⑤SQL文実行
+    $login_like_stmt = $dbh->prepare($login_like_sql);
+    $login_like_stmt->execute($login_like_data);
     // ⑥フェッチして取得
+    $login_count = $login_like_stmt->fetch(PDO::FETCH_ASSOC);
     // ⑦tweetのキーに上記で行った値を入れる
-
+    $tweet['like_count'] = $login_count['like_count'];
     $tweets[] = $tweet;
   }
 
