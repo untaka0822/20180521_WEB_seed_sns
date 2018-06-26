@@ -28,6 +28,11 @@
   		$tweets[] = $tweet;
   	}
 
+    echo '<br>';
+    echo '<pre>';
+    var_dump($tweets);
+    echo '</pre>';
+
     for($i=0; $i < count($tweets); $i++) {
       $reply_sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
       $reply_data = array($tweets[$i]['reply_tweet_id']);
@@ -43,6 +48,7 @@
         $reply_tweets[] = $reply_tweet;
       }
     }
+
     for($i=0; $i < count($tweets); $i++) {
       for ($n=0; $n < count($reply_tweets); $n++) {
         if ($tweets[$i]['reply_tweet_id'] == $reply_tweets[$n]['tweet_id']) {
@@ -54,10 +60,6 @@
     }
   }
 
-  // echo '<br>';
-  // echo '<pre>';
-  // var_dump($tweets);
-  // echo '</pre>';
 ?>
 <!DOCTYPE html>
 <html lang="ja">

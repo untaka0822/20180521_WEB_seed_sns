@@ -100,6 +100,19 @@
     if ($tweet == false) {
       break;
     }
+    // ツイートにログインユーザーがいいねしているかどうかのフラグ作成
+    // ①like数を求めるSQL文
+    $like_sql = 'SELECT COUNT(*) AS `like_count` FROM `likes` WHERE `tweet_id`=?';
+    // ②SQL文実行、フェッチして値を取得
+    // ③一行分のデータに新しいキーを用意して、like数を代入
+
+
+    // ④ログインしている人がLikeしているかどうかの情報を取得
+    
+    // ⑤SQL文実行
+    // ⑥フェッチして取得
+    // ⑦tweetのキーに上記で行った値を入れる
+
     $tweets[] = $tweet;
   }
 
@@ -200,7 +213,8 @@
               [<a href="edit.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
               [<a href="delete.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
             <?php endif ?>
-            <!-- [<a href="#" style="color: blue;"><i class="fa fa-thumbs-o-up">いいね</i></a>] -->
+            [<a href="like.php?like_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-up">いいね</i></a>]
+            [<a href="like.php?dislike_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-down">よくないね</i></a>]
           </p>
         </div>
         <?php } ?>
