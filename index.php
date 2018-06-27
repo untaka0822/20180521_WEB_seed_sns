@@ -103,12 +103,16 @@
     // ツイートにログインユーザーがいいねしているかどうかのフラグ作成
     // ①like数を求めるSQL文
     $like_sql = 'SELECT COUNT(*) AS `like_count` FROM `likes` WHERE `tweet_id`=?';
+    $like_data = array($tweet['tweet_id']);
+    $like_stmt = $dbh->prepare($like_sql);
+    $like_stmt->execute($like_data);
     // ②SQL文実行、フェッチして値を取得
+    $tweet_likes = $like_stmt->fetch(PDO::FETCH_ASSOC);
     // ③一行分のデータに新しいキーを用意して、like数を代入
-
+    $tweet['likes'] = $tweet_likes['like_count'];
 
     // ④ログインしている人が各ツイートにLikeしているかどうかの情報を取得
-    $login_like_sql ='SELECT COUNT(*) AS `like_count` FROM `tweets` WHERE `tweet_id`=? AND `member_id`=?';
+    $login_like_sql ='SELECT COUNT(*) AS `like_count` FROM `likes` WHERE `tweet_id`=? AND `member_id`=?';
     $login_like_data = array($tweet['tweet_id'], $_SESSION['login_id']);
     // ⑤SQL文実行
     $login_like_stmt = $dbh->prepare($login_like_sql);
@@ -217,8 +221,17 @@
               [<a href="edit.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
               [<a href="delete.php?tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
             <?php endif ?>
-            [<a href="like.php?like_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-up">いいね</i></a>]
-            [<a href="like.php?dislike_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-down">よくないね</i></a>]
+            <!-- いいね表示 -->
+            <?php if ($tweet['like_count'] == 0): ?>
+              [<a href="like.php?like_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-up">いいね</i></a>]
+            <?php else: ?>
+              [<a href="like.php?dislike_tweet_id=<?php echo $tweet['tweet_id']; ?>" style="color: blue;"><i class="fa fa-thumbs-o-down">よくないね</i></a>]
+            <?php endif ?>
+
+            <!-- いいね数表示 -->
+            <?php if ($tweet['likes'] > 0): ?>
+              <?php echo $tweet['likes']; ?>
+            <?php endif ?>
           </p>
         </div>
         <?php } ?>
