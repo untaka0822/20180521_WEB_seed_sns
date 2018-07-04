@@ -7,6 +7,21 @@
 		header('Location: index.php');
 	}
 
+  // フォローボタンが押された時
+  if (!empty($_GET['following_id'])) {
+    $sql = 'INSERT INTO `follows` SET `member_id`=?, `follower_id`=?';
+    $data = array($_SESSION['login_id'], $_GET['following_id']);
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+
+    header('Location: profile.php?member_id='.$_GET['following_id']);
+  }
+
+  // フォロー解除ボタンが押された時
+  if (!empty($_GET['unfollow_id'])) {
+    
+  }
+
 	// GET送信されている場合
 	if (!empty($_GET)) {
 		// テーブル結合 LEFT JOIN
@@ -27,11 +42,6 @@
   		}
   		$tweets[] = $tweet;
   	}
-
-    echo '<br>';
-    echo '<pre>';
-    var_dump($tweets);
-    echo '</pre>';
 
     for($i=0; $i < count($tweets); $i++) {
       $reply_sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
@@ -111,6 +121,8 @@
         <!-- <a href="profile.php"><button class="btn btn-block btn-default">フォロー</button></a>
         <a href="profile.php"><button class="btn btn-block btn-default">フォロー解除</button></a> -->
         <br>
+        <a href="profile.php?following_id=<?php echo $_GET['member_id']; ?>" class="btn btn-default" style="width: 100%;">フォロー</a>
+        <a href="profile.php?unfollow_id=<?php echo $_GET['member_id']; ?>" class="btn btn-default" style="width: 100%;">フォロー解除</a>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
       <div class="col-md-9 content-margin-top">

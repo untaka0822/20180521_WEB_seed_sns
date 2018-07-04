@@ -71,6 +71,7 @@
               [<a href="edit.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #00994C;">編集</a>]
               [<a href="delete.php?tweet_id=<?php echo $record['tweet_id']; ?>" style="color: #F33;">削除</a>]
             <?php endif ?>
+            [<a onclick="push_setting();" href="#" style="color: #0000cd;">通知</a>]
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
@@ -82,5 +83,22 @@
     <script src="assets/js/jquery-3.1.1.js"></script>
     <script src="assets/js/jquery-migrate-1.4.1.js"></script>
     <script src="assets/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/push.js/0.0.11/push.min.js"></script>
+    <script type="text/javascript">
+      function push_setting(){
+        Push.Permission.request();
+
+        Push.create('Seed_SNS', {
+        body: '個別ページだよん',
+        icon: 'picture_path/a.jpg',
+        timeout: 8000, // 通知が消えるタイミング
+        vibrate: [100, 100, 100], // モバイル端末でのバイブレーション秒数
+        onClick: function() {
+          // 通知がクリックされた場合の設定
+          console.log(this);
+        }
+        });
+      }
+    </script>
   </body>
 </html>
