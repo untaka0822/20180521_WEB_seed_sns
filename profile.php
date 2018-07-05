@@ -19,7 +19,12 @@
 
   // フォロー解除ボタンが押された時
   if (!empty($_GET['unfollow_id'])) {
-    
+    $sql = 'DELETE FROM `follows` WHERE`member_id`=? AND `follower_id`=?';
+    $data = array($_SESSION['login_id'], $_GET['unfollow_id']);
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+
+    header('Location: profile.php?member_id='.$_GET['unfollow_id']);
   }
 
 	// GET送信されている場合
@@ -69,6 +74,14 @@
       }
     }
   }
+
+  // ログインしているユーザーがそのユーザーに対してフォローしているかどうかの判定
+  $sql = 'SELECT COUNT(*) AS `count` FROM `follows` WHERE `member_id`=? AND `follower_id`=?';
+  $data = array($_SESSION['login_id'], $_GET['member_id']);
+  $stmt = $dbh->prepare($sql);
+  $stmt->execute($data);
+  $follow_count = $stmt->fetch(PDO::FETCH_ASSOC);
+  $follow = $follow_count['count'];
 
 ?>
 <!DOCTYPE html>
@@ -121,8 +134,11 @@
         <!-- <a href="profile.php"><button class="btn btn-block btn-default">フォロー</button></a>
         <a href="profile.php"><button class="btn btn-block btn-default">フォロー解除</button></a> -->
         <br>
+        <?php if (isset($follow) && $follow == 0): ?>
         <a href="profile.php?following_id=<?php echo $_GET['member_id']; ?>" class="btn btn-default" style="width: 100%;">フォロー</a>
+        <?php else: ?>
         <a href="profile.php?unfollow_id=<?php echo $_GET['member_id']; ?>" class="btn btn-default" style="width: 100%;">フォロー解除</a>
+        <?php endif ?>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
       <div class="col-md-9 content-margin-top">

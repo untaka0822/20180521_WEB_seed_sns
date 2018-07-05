@@ -5,20 +5,11 @@
   if (!isset($_SESSION['login_id'])) {
   	header('Location: login.php');
   } else {
-  	$sql = 'SELECT `members`.*, `tweets`.`tweet` FROM `members` LEFT JOIN `tweets` ON `members`.`member_id`=`tweets`.`member_id` WHERE `members`.`member_id`=?';
-  	$data = array($_GET['member_id']);
+  	$sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+  	$data = array($_SESSION['login_id']);
   	$stmt = $dbh->prepare($sql);
     $stmt->execute($data);
     $login = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $login_tweet = array();
-    while(true) {
-    	$login['tweet'] = $stmt->fetch(PDO::FETCH_ASSOC);
-    	if ($login['tweet'] == false) {
-    		break;
-    	}
-    	$login_tweet[] = $login['tweet'];
-    }
   }
 
 ?>

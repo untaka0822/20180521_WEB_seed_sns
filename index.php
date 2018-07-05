@@ -206,6 +206,7 @@
       </div>
 
       <div class="col-md-8 content-margin-top">
+        <a href="follower.php">フォロワー</a> / <a href="following.php">フォロー</a>
         <?php foreach ($tweets as $tweet) { ?>
         <div class="msg">
           <img src="picture_path/<?php echo $tweet['picture_path']; ?>" width="48" height="48">
