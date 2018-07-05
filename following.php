@@ -11,31 +11,17 @@
 	    $stmt->execute($data);
 	    $login = $stmt->fetch(PDO::FETCH_ASSOC);
 
-	    $following_sql = 'SELECT * FROM `follows` LEFT JOIN `members` ON `follows`.`member_id`=`members`.`member_id` WHERE `follows`.`member_id`=?';
+	    $following_sql = 'SELECT * FROM `follows` LEFT JOIN `members` ON `follows`.`follower_id`=`members`.`member_id` WHERE `follows`.`member_id`=?';
 	    $following_data = array($_SESSION['login_id']);
 	    $following_stmt = $dbh->prepare($following_sql);
 	    $following_stmt->execute($following_data);
 	    $follows = array();
-	    $fs = array();
 	    while(true) {
 	    	$follow = $following_stmt->fetch(PDO::FETCH_ASSOC);
 	    	if ($follow == false) {
 	    		break;
 	    	}
 	    	$follows[] = $follow;
-	    	for ($i=0; $i < count($follows); $i++) { 
-		    	$f_sql = 'SELECT * FROM `members` WHERE `member_id`=?';
-		    	$f_data = array($follows[$i]['follower_id']);
-		    	$f_stmt = $dbh->prepare($f_sql);
-		    	$f_stmt->execute($f_data);
-		    	$f = $f_stmt->fetch(PDO::FETCH_ASSOC);
-		    	if ($f == false) {
-		    		break;
-		    	}
-		    	$fs[] = $f;
-		    	$follows['user_name'] = $f['nickname'];
-		    	$follows['user_email'] = $f['email'];
-		    }
 		}
   	}
   	echo '<br>';
