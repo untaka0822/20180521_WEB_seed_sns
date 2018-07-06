@@ -1,16 +1,29 @@
 <?php
 	session_start();
-  	require('db_connect.php');
+  require('db_connect.php');
 
 	if (!isset($_SESSION['login_id'])) {
   		header('Location: login.php');
-  	} else {
-	  	$sql = 'SELECT * FROM `members` WHERE `member_id`=?';
-	  	$data = array($_SESSION['login_id']);
-	  	$stmt = $dbh->prepare($sql);
-	    $stmt->execute($data);
-	    $login = $stmt->fetch(PDO::FETCH_ASSOC);
-  	}
+  } else {
+  	$sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+  	$data = array($_SESSION['login_id']);
+  	$stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+    $login = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $follower_sql = 'SELECT * FROM `follows` LEFT JOIN `members` ON `follows`.`member_id`=`members`.`member_id` WHERE `follows`.`follower_id`=?';
+    $follower_data = array($_SESSION['login_id']);
+    $follower_stmt = $dbh->prepare($follower_sql);
+    $follower_stmt->execute($follower_data);
+    $follows = array();
+    while(true) {
+      $follow = $follower_stmt->fetch(PDO::FETCH_ASSOC);
+      if ($follow == false) {
+        break;
+      }
+      $follows[] = $follow;
+    }
+  }
 ?>
 
 <!DOCTYPE html>

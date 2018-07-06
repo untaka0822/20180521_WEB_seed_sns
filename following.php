@@ -1,33 +1,36 @@
 <?php
 	session_start();
-  	require('db_connect.php');
+  require('db_connect.php');
 
 	if (!isset($_SESSION['login_id'])) {
   		header('Location: login.php');
-  	} else {
-	  	$sql = 'SELECT * FROM `members` WHERE `member_id`=?';
-	  	$data = array($_SESSION['login_id']);
-	  	$stmt = $dbh->prepare($sql);
-	    $stmt->execute($data);
-	    $login = $stmt->fetch(PDO::FETCH_ASSOC);
+	} else {
+  	$sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+  	$data = array($_SESSION['login_id']);
+  	$stmt = $dbh->prepare($sql);
+    $stmt->execute($data);
+    $login = $stmt->fetch(PDO::FETCH_ASSOC);
 
-	    $following_sql = 'SELECT * FROM `follows` LEFT JOIN `members` ON `follows`.`follower_id`=`members`.`member_id` WHERE `follows`.`member_id`=?';
-	    $following_data = array($_SESSION['login_id']);
-	    $following_stmt = $dbh->prepare($following_sql);
-	    $following_stmt->execute($following_data);
-	    $follows = array();
-	    while(true) {
-	    	$follow = $following_stmt->fetch(PDO::FETCH_ASSOC);
-	    	if ($follow == false) {
-	    		break;
-	    	}
-	    	$follows[] = $follow;
+    // ログインしているユーザーがフォローしている人
+    $following_sql = 'SELECT * FROM `follows` LEFT JOIN `members` ON `follows`.`follower_id`=`members`.`member_id` WHERE `follows`.`member_id`=?';
+    $following_data = array($_SESSION['login_id']);
+    $following_stmt = $dbh->prepare($following_sql);
+    $following_stmt->execute($following_data);
+    $follows = array();
+    while(true) {
+    	$follow = $following_stmt->fetch(PDO::FETCH_ASSOC);
+    	if ($follow == false) {
+    		break;
+    	}
+    	$follows[] = $follow;
 		}
-  	}
-  	echo '<br>';
-  	echo '<br>';
-  	echo '<br>';
-  	var_dump($follows);
+  }
+  	// echo '<br>';
+  	// echo '<br>';
+  	// echo '<br>';
+   //  echo '<pre>';
+  	// var_dump($follows);
+   //  echo '</pre>';
 
 
 ?>
